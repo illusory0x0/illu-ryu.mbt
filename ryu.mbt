@@ -14,6 +14,11 @@
 
 // MoonBit implementation of Ryu, https://github.com/ulfjack/ryu
 // This is a fork of the ryu crate adjusted to comply to the ECMAScript number-to-string algorithm,
+//
+// ==============================================================================================
+// this file is copy from `https://github.com/moonbitlang/core/tree/main/double/internal/ryu`
+// ==============================================================================================
+//
 
 ///|
 fn string_from_bytes(bytes : FixedArray[Byte], from : Int, to : Int) -> String {

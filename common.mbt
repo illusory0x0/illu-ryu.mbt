@@ -11,7 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+//
+// ==============================================================================================
+// this file is copy from `https://github.com/moonbitlang/core/tree/main/double/internal/ryu`
+// ==============================================================================================
+//
 // Returns e == 0 ? 1 : ceil(log_2(5^e)); requires 0 <= e <= 3528.
 
 ///|
