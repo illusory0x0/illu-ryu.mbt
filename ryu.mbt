@@ -21,15 +21,6 @@
 //
 
 ///|
-fn string_from_bytes(bytes : FixedArray[Byte], from : Int, to : Int) -> String {
-  let buf = StringBuilder::new(size_hint=bytes.length())
-  for i in from..<to {
-    buf.write_char(bytes[i].to_char())
-  }
-  buf.to_string()
-}
-
-///|
 fn string_from_arrayview_byte(bv : ArrayView[Byte]) -> String {
   let buf = StringBuilder::new(size_hint=bv.length() << 1)
   for b in bv {
