@@ -23,18 +23,6 @@ fn pow5bits(e : Int) -> Int {
   ((e * 1217359).reinterpret_as_uint() >> 19).reinterpret_as_int() + 1
 }
 
-///|
-fn copy_special_str(sign : Bool, exponent : Bool, mantissa : Bool) -> String {
-  if mantissa {
-    return "NaN"
-  }
-  let s = if sign { "-" } else { "" }
-  if exponent {
-    return s + "Infinity"
-  }
-  return s + "0.0"
-}
-
 // Returns floor(log_10(5^e)); requires 0 <= e <= 2620.
 
 ///|
