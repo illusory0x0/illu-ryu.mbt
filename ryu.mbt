@@ -721,6 +721,34 @@ pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
 }
 
 ///|
+fn memcpy(dst : ArrayView[Byte], src : Bytes) -> Unit {
+  for i in 0..<src.length() {
+    dst[i] = src[i]
+  }
+}
+
+///|
+fn memcpy_avb(dst : ArrayView[Byte], src : ArrayView[Byte]) -> Unit {
+  for i in 0..<src.length() {
+    dst[i] = src[i]
+  }
+}
+
+///|
+pub fn ryu_arrayview_bytes_write(val : Double, bv : ArrayView[Byte]) -> Unit {
+  let repr = ryu_to_repr(val)
+  match repr {
+    Nan => memcpy(bv, b"NaN")
+    Negative(Zero) => memcpy(bv, b"0")
+    Negative(Infinity) => memcpy(bv, b"-Infinity")
+    Negative(Normal(v)) => memcpy_avb(bv, to_arrayview_byte(v, true))
+    Positive(Zero) => memcpy(bv, b"0")
+    Positive(Infinity) => memcpy(bv, b"Infinity")
+    Positive(Normal(v)) => memcpy_avb(bv, to_arrayview_byte(v, false))
+  }
+}
+
+///|
 test "double/ryu.mbt:205" {
   let m = 123456789UL
   let mul0 = 987654321UL
