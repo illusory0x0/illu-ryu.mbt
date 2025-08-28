@@ -624,10 +624,23 @@ fn d2d_small_int(
 }
 
 ///|
-/// TODO: ryu_to_logger[T:Logger](Double/Float, T) -> Unit
-pub fn ryu_to_string(val : Double) -> String {
+fn ryu_special_repr(sign : Bool, exponent : Bool, mantissa : Bool) -> Repr {
+  if mantissa {
+    Nan
+  } else {
+    match (sign, exponent) {
+      (true, true) => Negative(Infinity)
+      (true, false) => Negative(Zero)
+      (false, true) => Positive(Infinity)
+      (false, false) => Positive(Zero)
+    }
+  }
+}
+
+///|
+fn ryu_to_repr(val : Double) -> Repr {
   if val == 0.0 {
-    return "0"
+    return Positive(Zero)
   }
   // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
   let bits : UInt64 = val.reinterpret_as_uint64()
@@ -642,7 +655,7 @@ pub fn ryu_to_string(val : Double) -> String {
   ((1UL << gDOUBLE_EXPONENT_BITS) - 1UL)).to_int()
   if ieeeExponent == (1 << gDOUBLE_EXPONENT_BITS) - 1 ||
     (ieeeExponent == 0 && ieeeMantissa == 0UL) {
-    return copy_special_str(ieeeSign, ieeeExponent != 0, ieeeMantissa != 0UL)
+    return ryu_special_repr(ieeeSign, ieeeExponent != 0, ieeeMantissa != 0UL)
   }
   let mut v : FloatingDecimal64 = { mantissa: 0UL, exponent: 0 }
   let small = d2d_small_int(ieeeMantissa, ieeeExponent)
@@ -661,7 +674,27 @@ pub fn ryu_to_string(val : Double) -> String {
     }
     None => v = d2d(ieeeMantissa, ieeeExponent.reinterpret_as_uint())
   }
-  to_chars(v, ieeeSign)
+  if ieeeSign {
+    Negative(Normal(v))
+  } else {
+    Positive(Normal(v))
+  }
+}
+
+///|
+/// TODO: ryu_to_logger[T:Logger](Double/Float, T) -> Unit
+pub fn ryu_to_string(val : Double) -> String {
+  let repr = ryu_to_repr(val)
+  match repr {
+    Nan => "NaN"
+    Negative(Zero) => "-0.0"
+    Negative(Infinity) => "-Infinity"
+    Negative(Normal(v)) => to_chars(v,true)
+    
+    Positive(Zero) => "0.0"
+    Positive(Infinity) => "Infinity"
+    Positive(Normal(v)) => to_chars(v,false)
+  }
 }
 
 ///|
