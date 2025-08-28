@@ -39,6 +39,13 @@ fn string_from_arrayview_byte(bv : ArrayView[Byte]) -> String {
 }
 
 ///|
+fn ryu_output(bv : ArrayView[Byte], buf : &Logger) -> Unit {
+  for b in bv {
+    buf.write_char(b.to_char())
+  }
+}
+
+///|
 fn umul128(a : UInt64, b : UInt64) -> (UInt64, UInt64) {
   let aLo = a & 0xffffffff
   let aHi = a >> 32
@@ -821,10 +828,10 @@ pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
     Nan => logger.write_string("NaN")
     Negative(Zero) => logger.write_string("0")
     Negative(Infinity) => logger.write_string("-Infinity")
-    Negative(Normal(v)) => ...
+    Negative(Normal(v)) => ryu_output(to_arrayview_byte(v, true), logger)
     Positive(Zero) => logger.write_string("0")
     Positive(Infinity) => logger.write_string("Infinity")
-    Positive(Normal(v)) => ...
+    Positive(Normal(v)) => ryu_output(to_arrayview_byte(v, false), logger)
   }
 }
 
