@@ -304,6 +304,20 @@ priv struct FloatingDecimal64 {
 }
 
 ///|
+priv enum Value {
+  Zero
+  Infinity
+  Normal(FloatingDecimal64)
+}
+
+///|
+priv enum Repr {
+  Nan
+  Negative(Value)
+  Positive(Value)
+}
+
+///|
 fn d2d(ieeeMantissa : UInt64, ieeeExponent : UInt) -> FloatingDecimal64 {
   let mut e2 : Int = 0
   let mut m2 : UInt64 = 0
