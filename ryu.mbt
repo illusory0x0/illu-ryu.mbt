@@ -30,6 +30,15 @@ fn string_from_bytes(bytes : FixedArray[Byte], from : Int, to : Int) -> String {
 }
 
 ///|
+fn string_from_arrayview_byte(bv : ArrayView[Byte]) -> String {
+  let buf = StringBuilder::new(size_hint=bv.length() << 1)
+  for b in bv {
+    buf.write_char(b.to_char())
+  }
+  buf.to_string()
+}
+
+///|
 fn umul128(a : UInt64, b : UInt64) -> (UInt64, UInt64) {
   let aLo = a & 0xffffffff
   let aHi = a >> 32
@@ -497,6 +506,113 @@ fn d2d(ieeeMantissa : UInt64, ieeeExponent : UInt) -> FloatingDecimal64 {
 }
 
 ///|
+fn to_arrayview_byte(v : FloatingDecimal64, sign : Bool) -> ArrayView[Byte] {
+  // Step 5: Print the decimal representation.
+  let result = Array::make(25, Byte::default())
+  let mut index : Int = 0
+  if sign {
+    result[index] = b'-'
+    index += 1
+  }
+  let mut output = v.mantissa
+  let olength = decimal_length17(output)
+  let mut exp : Int = v.exponent + olength - 1
+  let scientificNotation = !(exp >= -6 && exp < 21)
+  if scientificNotation {
+    // Print the decimal digits.
+    for i in 0..<(olength - 1) {
+      let c = output % 10
+      output /= 10
+      // 48 is ASCII '0', the same applies below.
+      result[index + olength - i] = (48 + c.to_int()).to_byte()
+    }
+    result[index] = (48 + output.to_int() % 10).to_byte()
+    if olength > 1 {
+      result[index + 1] = b'.'
+    } else {
+      // If there are no decimals, suppress .0
+      index -= 1
+    }
+    index += olength + 1
+
+    // Print the exponent.
+    result[index] = b'e'
+    index += 1
+    if exp < 0 {
+      result[index] = b'-'
+      index += 1
+      exp = -exp
+    } else {
+      result[index] = b'+'
+      index += 1
+    }
+    if exp >= 100 {
+      let a = exp / 100
+      let b = exp / 10 % 10
+      let c = exp % 10
+      result[index + 0] = (48 + a).to_byte()
+      result[index + 1] = (48 + b).to_byte()
+      result[index + 2] = (48 + c).to_byte()
+      index += 3
+    } else if exp >= 10 {
+      let a = exp / 10
+      let b = exp % 10
+      result[index + 0] = (48 + a).to_byte()
+      result[index + 1] = (48 + b).to_byte()
+      index += 2
+    } else {
+      result[index] = (48 + exp).to_byte()
+      index += 1
+    }
+    result[0:index]
+    // string_from_bytes(result, 0, index)
+  } else {
+    // Otherwise follow the ECMAScript spec.
+    if exp < 0 {
+      // Decimal dot is before any of the digits.
+      result[index] = b'0'
+      index += 1
+      result[index] = b'.'
+      index += 1
+      for i = -1; i > exp; i = i - 1 {
+        result[index] = b'0'
+        index += 1
+      }
+      let current = index
+      for i in 0..<olength {
+        result[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+        output /= 10
+        index += 1
+      }
+    } else if exp + 1 >= olength {
+      // Decimal dot is after any of the digits.
+      for i in 0..<olength {
+        result[index + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+        output /= 10
+      }
+      index += olength
+      for i in olength..<(exp + 1) {
+        result[index] = b'0'
+        index += 1
+      }
+    } else {
+      // Decimal dot is somewhere between the digits.
+      let mut current = index + 1
+      for i in 0..<olength {
+        if olength - i - 1 == exp {
+          result[current + olength - i - 1] = b'.'
+          current -= 1
+        }
+        result[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+        output /= 10
+      }
+      index += olength + 1
+    }
+    result[0:index]
+  }
+}
+
+///|
 fn to_chars(v : FloatingDecimal64, sign : Bool) -> String {
   // Step 5: Print the decimal representation.
   let result = FixedArray::make(25, Byte::default())
@@ -687,13 +803,28 @@ pub fn ryu_to_string(val : Double) -> String {
   let repr = ryu_to_repr(val)
   match repr {
     Nan => "NaN"
-    Negative(Zero) => "-0.0"
+    Negative(Zero) => "0"
     Negative(Infinity) => "-Infinity"
-    Negative(Normal(v)) => to_chars(v,true)
-    
-    Positive(Zero) => "0.0"
+    Negative(Normal(v)) =>
+      to_arrayview_byte(v, true) |> string_from_arrayview_byte
+    Positive(Zero) => "0"
     Positive(Infinity) => "Infinity"
-    Positive(Normal(v)) => to_chars(v,false)
+    Positive(Normal(v)) =>
+      to_arrayview_byte(v, false) |> string_from_arrayview_byte
+  }
+}
+
+///|
+pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
+  let repr = ryu_to_repr(val)
+  match repr {
+    Nan => logger.write_string("NaN")
+    Negative(Zero) => logger.write_string("0")
+    Negative(Infinity) => logger.write_string("-Infinity")
+    Negative(Normal(v)) => ...
+    Positive(Zero) => logger.write_string("0")
+    Positive(Infinity) => logger.write_string("Infinity")
+    Positive(Normal(v)) => ...
   }
 }
 

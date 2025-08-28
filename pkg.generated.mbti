@@ -1,7 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "moonbitlang/core/double/internal/ryu"
+package "illusory0x0/ryu"
 
 // Values
+fn ryu_to_logger(Double, &Logger) -> Unit
+
 fn ryu_to_string(Double) -> String
 
 // Errors
