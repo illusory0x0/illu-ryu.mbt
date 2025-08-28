@@ -320,7 +320,6 @@ test "boundary conditions" {
   )
 }
 
-
 ///|
 test "double/ryu.mbt:90" {
   let value = 100L
