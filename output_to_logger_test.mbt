@@ -32,10 +32,7 @@ test "Basic" {
 
 ///|
 test "Switch to Subnormal" {
-  assert_eq(
-    otl_to_string(2.2250738585072014e-308),
-    "2.2250738585072014e-308",
-  )
+  assert_eq(otl_to_string(2.2250738585072014e-308), "2.2250738585072014e-308")
   assert_eq(
     otl_to_string(0x0010000000000000L.reinterpret_as_double()),
     "2.2250738585072014e-308",
@@ -82,10 +79,7 @@ test "Regression" {
     otl_to_string(-6.9741824662760956e19),
     content="-69741824662760956000",
   )
-  inspect(
-    otl_to_string(4.3816050601147837e18),
-    content="4381605060114783700",
-  )
+  inspect(otl_to_string(4.3816050601147837e18), content="4381605060114783700")
 }
 
 ///|
@@ -299,10 +293,7 @@ test "boundary conditions" {
   // x = 1.0e-3
   inspect(otl_to_string(0.001), content="0.001")
   // x < 1.0e-3
-  inspect(
-    otl_to_string(0.0009999999999999998),
-    content="0.0009999999999999998",
-  )
+  inspect(otl_to_string(0.0009999999999999998), content="0.0009999999999999998")
 }
 
 // For testing purposes
