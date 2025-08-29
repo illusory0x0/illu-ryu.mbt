@@ -2,6 +2,8 @@
 
 A MoonBit implementation of the Ryu algorithm for fast floating-point to string conversion.
 
+> **Note**: This file is copied from `https://github.com/moonbitlang/core/tree/main/double/internal/ryu`
+
 ## Overview
 
 This package provides an efficient implementation of the Ryu algorithm, which converts IEEE 754 double-precision floating-point numbers to their string representation. The implementation is based on the original [Ryu algorithm](https://github.com/ulfjack/ryu) and has been adapted to comply with the ECMAScript number-to-string algorithm.
