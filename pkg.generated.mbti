@@ -2,7 +2,7 @@
 package "illusory0x0/ryu"
 
 // Values
-fn ryu_arrayview_bytes_write(Double, ArrayView[Byte]) -> Unit
+fn ryu_arrayview_bytes_write(Double, ArrayView[Byte]) -> Int
 
 fn ryu_to_logger(Double, &Logger) -> Unit
 

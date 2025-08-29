@@ -728,30 +728,26 @@ pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
 }
 
 ///|
-fn memcpy(dst : ArrayView[Byte], src : Bytes) -> Unit {
+fn memcpy(dst : ArrayView[Byte], src : Bytes) -> Int {
   for i in 0..<src.length() {
     dst[i] = src[i]
   }
+  src.length()
 }
 
 ///|
-fn memcpy_avb(dst : ArrayView[Byte], src : ArrayView[Byte]) -> Unit {
-  for i in 0..<src.length() {
-    dst[i] = src[i]
-  }
-}
-
-///|
-pub fn ryu_arrayview_bytes_write(val : Double, bv : ArrayView[Byte]) -> Unit {
+pub fn ryu_arrayview_bytes_write(val : Double, bv : ArrayView[Byte]) -> Int {
   let repr = ryu_to_repr(val)
   match repr {
     Nan => memcpy(bv, b"NaN")
     Negative(Zero) => memcpy(bv, b"0")
     Negative(Infinity) => memcpy(bv, b"-Infinity")
-    Negative(Normal(v)) => memcpy_avb(bv, to_arrayview_byte(v, true))
+    Negative(Normal(v)) =>
+      write_floating_decimal64_to_arrayview_byte(bv, v, true)
     Positive(Zero) => memcpy(bv, b"0")
     Positive(Infinity) => memcpy(bv, b"Infinity")
-    Positive(Normal(v)) => memcpy_avb(bv, to_arrayview_byte(v, false))
+    Positive(Normal(v)) =>
+      write_floating_decimal64_to_arrayview_byte(bv, v, false)
   }
 }
 
