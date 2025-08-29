@@ -21,8 +21,7 @@
 //
 
 ///|
-/// TODO: ryu_to_logger[T:Logger](Double/Float, T) -> Unit
-pub fn ryu_to_string(val : Double) -> String {
+pub fn to_string(val : Double) -> String {
   let repr = ryu_to_repr(val)
   match repr {
     Nan => "NaN"
@@ -38,7 +37,7 @@ pub fn ryu_to_string(val : Double) -> String {
 }
 
 ///|
-pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
+pub fn output_to_logger(val : Double, logger : &Logger) -> Unit {
   let repr = ryu_to_repr(val)
   match repr {
     Nan => logger.write_string("NaN")
@@ -52,7 +51,7 @@ pub fn ryu_to_logger(val : Double, logger : &Logger) -> Unit {
 }
 
 ///|
-pub fn ryu_arrayview_bytes_write(val : Double, bv : ArrayView[Byte]) -> Int {
+pub fn write_to_arrayview_byte(val : Double, bv : ArrayView[Byte]) -> Int {
   let repr = ryu_to_repr(val)
   match repr {
     Nan => memcpy(bv, b"NaN")

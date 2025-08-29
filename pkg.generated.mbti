@@ -2,11 +2,11 @@
 package "illusory0x0/ryu"
 
 // Values
-fn ryu_arrayview_bytes_write(Double, ArrayView[Byte]) -> Int
+fn output_to_logger(Double, &Logger) -> Unit
 
-fn ryu_to_logger(Double, &Logger) -> Unit
+fn to_string(Double) -> String
 
-fn ryu_to_string(Double) -> String
+fn write_to_arrayview_byte(Double, ArrayView[Byte]) -> Int
 
 // Errors
 

@@ -10,7 +10,7 @@ fn ieee_parts_to_double(
 ///|
 fn logger_to_string(val : Double) -> String {
   let b = StringBuilder::new(size_hint=60)
-  ryu_to_logger(val, b)
+  output_to_logger(val, b)
   b.to_string()
 }
 
@@ -26,6 +26,6 @@ fn string_from_arrayview_byte(bv : ArrayView[Byte]) -> String {
 ///|
 fn write_to_string(val : Double) -> String {
   let buf = Array::make(80, b'\xff')
-  let offset = ryu_arrayview_bytes_write(val, buf)
+  let offset = write_to_arrayview_byte(val, buf)
   string_from_arrayview_byte(buf[0:offset])
 }
