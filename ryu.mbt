@@ -507,9 +507,20 @@ fn d2d(ieeeMantissa : UInt64, ieeeExponent : UInt) -> FloatingDecimal64 {
 fn to_arrayview_byte(v : FloatingDecimal64, sign : Bool) -> ArrayView[Byte] {
   // Step 5: Print the decimal representation.
   let result = Array::make(25, Byte::default())
+  let offset = write_floating_decimal64_to_arrayview_byte(result, v, sign)
+  result[0:offset]
+}
+
+///|
+fn write_floating_decimal64_to_arrayview_byte(
+  dst : ArrayView[Byte],
+  v : FloatingDecimal64,
+  sign : Bool,
+) -> Int {
+  // Step 5: Print the decimal representation.
   let mut index : Int = 0
   if sign {
-    result[index] = b'-'
+    dst[index] = b'-'
     index += 1
   }
   let mut output = v.mantissa
@@ -522,11 +533,11 @@ fn to_arrayview_byte(v : FloatingDecimal64, sign : Bool) -> ArrayView[Byte] {
       let c = output % 10
       output /= 10
       // 48 is ASCII '0', the same applies below.
-      result[index + olength - i] = (48 + c.to_int()).to_byte()
+      dst[index + olength - i] = (48 + c.to_int()).to_byte()
     }
-    result[index] = (48 + output.to_int() % 10).to_byte()
+    dst[index] = (48 + output.to_int() % 10).to_byte()
     if olength > 1 {
-      result[index + 1] = b'.'
+      dst[index + 1] = b'.'
     } else {
       // If there are no decimals, suppress .0
       index -= 1
@@ -534,80 +545,76 @@ fn to_arrayview_byte(v : FloatingDecimal64, sign : Bool) -> ArrayView[Byte] {
     index += olength + 1
 
     // Print the exponent.
-    result[index] = b'e'
+    dst[index] = b'e'
     index += 1
     if exp < 0 {
-      result[index] = b'-'
+      dst[index] = b'-'
       index += 1
       exp = -exp
     } else {
-      result[index] = b'+'
+      dst[index] = b'+'
       index += 1
     }
     if exp >= 100 {
       let a = exp / 100
       let b = exp / 10 % 10
       let c = exp % 10
-      result[index + 0] = (48 + a).to_byte()
-      result[index + 1] = (48 + b).to_byte()
-      result[index + 2] = (48 + c).to_byte()
+      dst[index + 0] = (48 + a).to_byte()
+      dst[index + 1] = (48 + b).to_byte()
+      dst[index + 2] = (48 + c).to_byte()
       index += 3
     } else if exp >= 10 {
       let a = exp / 10
       let b = exp % 10
-      result[index + 0] = (48 + a).to_byte()
-      result[index + 1] = (48 + b).to_byte()
+      dst[index + 0] = (48 + a).to_byte()
+      dst[index + 1] = (48 + b).to_byte()
       index += 2
     } else {
-      result[index] = (48 + exp).to_byte()
+      dst[index] = (48 + exp).to_byte()
       index += 1
     }
-    result[0:index]
-    // string_from_bytes(result, 0, index)
-  } else {
     // Otherwise follow the ECMAScript spec.
-    if exp < 0 {
-      // Decimal dot is before any of the digits.
-      result[index] = b'0'
+  } else if exp < 0 {
+    // Decimal dot is before any of the digits.
+    dst[index] = b'0'
+    index += 1
+    dst[index] = b'.'
+    index += 1
+    for i = -1; i > exp; i = i - 1 {
+      dst[index] = b'0'
       index += 1
-      result[index] = b'.'
-      index += 1
-      for i = -1; i > exp; i = i - 1 {
-        result[index] = b'0'
-        index += 1
-      }
-      let current = index
-      for i in 0..<olength {
-        result[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
-        output /= 10
-        index += 1
-      }
-    } else if exp + 1 >= olength {
-      // Decimal dot is after any of the digits.
-      for i in 0..<olength {
-        result[index + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
-        output /= 10
-      }
-      index += olength
-      for i in olength..<(exp + 1) {
-        result[index] = b'0'
-        index += 1
-      }
-    } else {
-      // Decimal dot is somewhere between the digits.
-      let mut current = index + 1
-      for i in 0..<olength {
-        if olength - i - 1 == exp {
-          result[current + olength - i - 1] = b'.'
-          current -= 1
-        }
-        result[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
-        output /= 10
-      }
-      index += olength + 1
     }
-    result[0:index]
+    let current = index
+    for i in 0..<olength {
+      dst[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+      output /= 10
+      index += 1
+    }
+  } else if exp + 1 >= olength {
+    // Decimal dot is after any of the digits.
+    for i in 0..<olength {
+      dst[index + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+      output /= 10
+    }
+    index += olength
+    for i in olength..<(exp + 1) {
+      dst[index] = b'0'
+      index += 1
+    }
+  } else {
+    // Decimal dot is somewhere between the digits.
+    let mut current = index + 1
+    for i in 0..<olength {
+      if olength - i - 1 == exp {
+        dst[current + olength - i - 1] = b'.'
+        current -= 1
+      }
+      dst[current + olength - i - 1] = (48 + (output % 10).to_int()).to_byte()
+      output /= 10
+    }
+    index += olength + 1
   }
+  index
 }
 
 ///|
